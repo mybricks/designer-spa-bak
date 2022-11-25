@@ -9,6 +9,6 @@
 
 </div>
 
-### Designer for no-code, compatible with low-code
+## Designer for no-code, compatible with low-code
 
-<img width="500" src="./img.png">
+<img width="800" src="./img.png">
