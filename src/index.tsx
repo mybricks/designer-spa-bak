@@ -1,9 +1,9 @@
 import {render, createRoot} from '@mybricks/rxui'
-import SPADesigner from './Designer'
+import Designer from './Designer'
 
 import {PcEditor} from '@mybricks/editors-pc-common';
 
-import {memo, useMemo, forwardRef, version as ReactVersion} from "react";
+import React, {memo, useMemo, forwardRef, version as ReactVersion} from "react";
 
 //import servicePlugin from '@mybricks/plugin-connector-http'
 
@@ -13,8 +13,6 @@ console.log(`%c ${pkg.name} %c@${pkg.version}`, `color:#FFF;background:#fa6400`,
 
 
 export default forwardRef((props, ref) => {
-  const {config, onMessage, onEdit, onClick} = props
-
   return (
     <DesignerRender
       {...props}
@@ -112,25 +110,39 @@ function DesignerRender({
 
   const jsx = useMemo(() => {
     return (
-      <div style={{height: '100%', display: 'flex', flexDirection: 'column'}} ref={el => {
+      <div style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }} ref={el => {
         if (el) {
           if (ReactVersion.startsWith('18.')) {
-            createRoot(el).render(<SPADesigner config={myConfig}
-                                               onEdit={onEdit}
-                                               onMessage={onMessage}
-                                               onClick={onClick}
-                                               ref={(opts) => {
-                                                 _ref.current = opts
-                                               }}/>)
+            createRoot(el).render(
+              <Designer config={myConfig}
+                        onEdit={onEdit}
+                        onMessage={onMessage}
+                        onClick={onClick}
+                        ref={(opts) => {
+                          if (typeof _ref === 'function') {
+                            _ref(opts)
+                          } else if (typeof _ref === 'object') {
+                            _ref.current = opts//refs
+                          }
+                        }}/>)
           } else {
             render(
-              <SPADesigner config={myConfig}
-                           onEdit={onEdit}
-                           onMessage={onMessage}
-                           onClick={onClick}
-                           ref={(opts) => {
-                             _ref.current = opts
-                           }}/>, el)
+              <Designer config={myConfig}
+                        onEdit={onEdit}
+                        onMessage={onMessage}
+                        onClick={onClick}
+                        ref={(opts) => {
+                          if (typeof _ref === 'function') {
+                            _ref(opts)
+                          } else if (typeof _ref === 'object') {
+                            _ref.current = opts//refs
+                          }
+                        }}/>, el)
           }
         }
       }}>
@@ -210,11 +222,9 @@ function deepAssign() {
     if (obj && typeof obj === "object") {
       for (let key in obj) {
         if (obj.hasOwnProperty(key)) {
-          //判断ojb子元素是否为对象，如果是，递归复制
           if (obj[key] && typeof obj[key] === "object") {
             target[key] = deepClone(target[key], obj[key]);
           } else {
-            //如果不是，简单复制
             target[key] = obj[key];
           }
         }

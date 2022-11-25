@@ -8,6 +8,7 @@ import {DesignerContext} from "@sdk";
 import SliderView from './coms/SliderView'
 import EditView from "@mybricks/desn-edit-view";
 import {GeoView} from '@mybricks/desn-geo-view'
+import {ToplView} from "@mybricks/desn-topl-view";
 
 import SPAContext from "./SPAContext";
 import initContext from './utils/initContext'
@@ -18,7 +19,6 @@ import {getConfigs} from "./configrable";
 import {T_Params} from "./types";
 import ViewSlotModel from "./ViewSlotModel";
 import ViewSlot from "./coms/ViewSlot";
-import {ToplView} from "@mybricks/desn-topl-view";
 
 import StatusBar from "./coms/StatusBar";
 import ColView from "./coms/ColView";

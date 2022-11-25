@@ -25,7 +25,6 @@ export default function initModel(spaContext: SPAContext): DesignerModel {
 }
 
 function loadComLibsAndPages(spaContext: SPAContext) {
-  //Shortcuts
   useMemo(async () => {
     const {desnContext, emitLogs, emitMessage} = spaContext
 
@@ -183,9 +182,6 @@ function loadComLibsAndPages(spaContext: SPAContext) {
       },
       loadBlueprint(blueprintJSON: {}) {
         const c = loadView(blueprintJSON, true)
-
-        console.log(c)
-
       },
       toJSON() {
         return toJSON(spaContext)
@@ -462,9 +458,6 @@ function initStageModel(spaContext: SPAContext) {
             if (mainSlot.comAry) {
               mainSlot.comAry.forEach(com => {
                 mainModule.slot.slots[0].addComponent(com)///TODO
-
-
-
               })
             }
 
