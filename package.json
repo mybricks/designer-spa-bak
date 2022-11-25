@@ -1,6 +1,6 @@
 {
   "name": "@mybricks/designer",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Designer for no-code, compatible with low-code",
   "main": "index.min.js",
   "scripts": {
@@ -9,7 +9,11 @@
     "_dev": "webpack-dev-server --config ./scripts/webpack._dev.js"
   },
   "repository": {
-    "type": "git"
+    "type": "git",
+    "url": "https://github.com/mybricks/designer.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
   },
   "author": "CheMingjun",
   "license": "ISC",
