@@ -1,0 +1,13 @@
+.git/
+.idea/
+.DS_Store
+node_modules
+src/**/*.js
+index.min.js
+tags/*
+.history
+.vscode/
+_scripts/
+scripts/
+package-lock.json
+tsconfig.json

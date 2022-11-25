@@ -1,0 +1,43 @@
+@bgcolor: #F7F7F7;
+
+.view {
+  z-index: 0;
+  background: @bgcolor;
+  //overflow-y: auto;
+  //border-right: 1px solid #bbb;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: hidden;
+  position: relative;
+}
+
+.resizer {
+  z-index: 100;
+  height: 100%;
+  width: 5px;
+  //position: absolute;
+  //top: 0;
+  margin-right: -2px;
+  margin-left: -2px;
+
+  //z-index: 100;
+  cursor: ew-resize;
+  background: transparent;
+
+  > div {
+    border-left: 1px solid #ccc;
+    height: 100%;
+    width: 1px;
+    margin-left: 2px;
+  }
+
+  &:hover {
+    transition: 0.2s;
+    background: #616C81;
+
+    > div {
+      border-left-color: #616C81;
+    }
+  }
+}

@@ -1,0 +1,183 @@
+﻿@import url('./theme');
+
+@import "./reset";
+
+@bgcolor: #F7F7F7;
+
+.errorCfg {
+  padding: 30px;
+  color: red;
+  font-style: italic;
+}
+
+.designerUi {
+  overscroll-behavior-x: none;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  margin: 0;
+
+  font-size: 12px;
+  user-select: none;
+
+  &:focus {
+    outline: none;
+  }
+
+  .lyMain {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+
+    .separatorH {
+      height: 8px;
+      cursor: row-resize;
+    }
+
+    .popBg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, .5);
+      z-index: 1000;
+
+      .lyPop {
+        position: absolute;
+        right: 0;
+        height: 100%;
+        width: 700px;
+        display: flex;
+        background: #FFF;
+      }
+
+      .lyPopR {
+        border-left: 1px solid #BBB;
+      }
+
+      .lyPopEdit {
+        border-right: 1px solid #DDD;
+        box-shadow: -3px 3px 7px #ddd;
+      }
+    }
+
+    .lyMax {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .lyDocker {
+      z-index: 0;
+      width: 50px;
+    }
+
+    //.lyNav {
+    //  z-index: 0;
+    //  width: 220px;
+    //  background: @bgcolor;
+    //  //overflow-y: auto;
+    //  border-right: 1px solid #bbb;
+    //  display: flex;
+    //  flex-direction: column;
+    //  flex-shrink: 0;
+    //  overflow-y: hidden;
+    //}
+
+    .lyStage {
+      flex: 1;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .lyEdt {
+      z-index: 0;
+      width: 280px;
+      background: @bgcolor;
+      //border-left: 1px solid #bbb;
+      overflow-y: hidden;
+      flex-shrink: 0;
+    }
+  }
+
+
+  .itemMover {
+    position: fixed;
+    z-index: 99999;
+  }
+
+  .componentMast {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+
+  .component {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    min-width: 1800px;
+    max-width: 1800px;
+    background-color: #ffffff;
+    border: 1px solid #aedcd5;
+    transform: scale(0.5) translate(-50%, 0%);
+    transform-origin: 0 0 0;
+    overflow: hidden;
+    height: 160%;
+    width: 120%;
+    z-index: 1100;
+  }
+}
+
+blockquote {
+  .reset()
+}
+
+.workspace {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+
+  .services {
+    height: 100%;
+  }
+
+  .pages {
+    height: 100%;
+  }
+}
+
+//.freeze {
+//  //>* {
+//  //  pointer-events: none !important;
+//  //  *{
+//  //    pointer-events: none !important;
+//  //  }
+//  //}
+//}
+
+.fullScreen {
+  position: absolute !important;
+  z-index: 1000;
+}
+
+.hideNavView {
+  .lyNav {
+    display: none !important;
+    //margin-left: -260px;
+  }
+}
+
+.hideEditView {
+  .lyEdt {
+    display: none;
+  }
+}

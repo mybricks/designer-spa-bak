@@ -1,0 +1,93 @@
+/**
+ * MyBricks Opensource
+ * https://mybricks.world
+ * This source code is licensed under the MIT license.
+ *
+ * CheMingjun @2019
+ * mybricks@126.com
+ */
+@import '../theme';
+
+.view {
+  width: 42px;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  //padding: 5px 0;
+  background-color: #DEE1E6; //#EBECEE
+
+  .item {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-right: 1px solid #CCC;
+    //margin: 5px 0;
+
+    > svg {
+      max-width: 20px;
+
+      path {
+        fill: #AAA;
+      }
+    }
+
+    &:first-child {
+      margin-top: -1px;
+    }
+  }
+
+  .active {
+    border-right: 0;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    //pointer-events: none;
+    background: #F7F7F7;
+    color: #FFF;
+    font-weight: bold;
+
+    > svg {
+      path {
+        fill: #000;
+      }
+    }
+  }
+
+  .sper {
+    border-right: 1px solid #CCC;
+  }
+}
+
+.pluginBg {
+  position: absolute;
+  z-index: 1000;
+  top: 0;
+  left: 42px;
+  bottom: 0;
+  right: 0;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .5);
+
+  .activePlugin {
+    //width: 250px;
+    width: fit-content;
+    height: 100%;
+    /* height: 100%; */
+    background: #F7F7F7;
+    border-right: 1px solid #CCC;
+    box-shadow: 0 0 10px 3px #ddd;
+  }
+
+  .errPlugin {
+    width: 200px;
+
+  }
+}
+
+.tabContent {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
