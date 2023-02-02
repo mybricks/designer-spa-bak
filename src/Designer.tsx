@@ -2,7 +2,7 @@ import css from './Designer.less'
 
 import React, {forwardRef, useMemo} from "react";
 
-import {evt, useComputed, useObservable} from "@mybricks/rxui";
+import {evt, useComputed, useObservable, observable} from "@mybricks/rxui";
 import {DesignerContext} from "@sdk";
 
 import SliderView from './coms/SliderView'

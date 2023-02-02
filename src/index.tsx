@@ -46,7 +46,7 @@ function DesignerRender({
       nav: {float: true},
       theme: {
         css: [
-          'https://ali-ec.static.yximgs.com/udata/pkg/eshop/fangzhou/pub/pkg/antd-4.16.13/dist/antd.min.css',
+          'https://ali-ec.static.yximgs.com/udata/pkg/eshop/fangzhou/pub/pkg/antd-4.21.6/antd.min.css',
           // 'https://ali-ec.static.yximgs.com/udata/pkg/eshop/fangzhou/res/global.7ec1844a853a56ed.css'
         ]
       }
@@ -56,7 +56,7 @@ function DesignerRender({
       //useStrict: true,//default is true
       cards: {
         main: {
-          title: '页面',
+          title: '画布',
         },
       }
     },

@@ -164,7 +164,7 @@ export default function ViewSlot({id, style, inIFrame, focused, min, onClose, if
   const myStyle = useComputed(() => {
     const rtn: any = !ctx.visible ? {display: 'none'} : {}
 
-    if (model.height === 'auto') {
+    if (model.height === 'auto' || model.height === void 0) {
       rtn.overflow = 'auto'
       rtn.flex = 1
     } else {

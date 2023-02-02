@@ -147,27 +147,27 @@ export default function initEmits(spaContext: SPAContext) {
               return
             }
 
-            if (target instanceof ComRuntimeModel && prop === 'id') {
-              const nid = uuid()
-              oriIds[val] = nid
-              return nid
-            }
-
-            if (target instanceof DiagramModel && prop === 'id') {
-              return uuid()
-            }
+            // if (target instanceof ComRuntimeModel && prop === 'id') {
+            //   const nid = uuid()
+            //   oriIds[val] = nid
+            //   return nid
+            // }
+            //
+            // if (target instanceof DiagramModel && prop === 'id') {
+            //   return uuid()
+            // }
 
             return val
           }
         })
 
-        if (Object.keys(oriIds).length > 0) {//replace id
-          let sjson = JSON.stringify(json)
-          Object.keys(oriIds).forEach(oid => {
-            sjson = sjson.replace(new RegExp(oid, 'g'), oriIds[oid])
-          })
-          json = JSON.parse(sjson)
-        }
+        // if (Object.keys(oriIds).length > 0) {//replace id
+        //   let sjson = JSON.stringify(json)
+        //   Object.keys(oriIds).forEach(oid => {
+        //     sjson = sjson.replace(new RegExp(oid, 'g'), oriIds[oid])
+        //   })
+        //   json = JSON.parse(sjson)
+        // }
 
 
         return {
@@ -431,7 +431,7 @@ function onPaste(evt) {
     return
   }
 
-  if(evt.path&&evt.path.length>0&&evt.path[0].tagName.match(/INPUT|TEXTAREA/gi)){
+  if (evt.path && evt.path.length > 0 && evt.path[0].tagName.match(/INPUT|TEXTAREA/gi)) {
     return
   }
 
@@ -487,38 +487,36 @@ export function importComponent(json: { from, rt }, myContext: SPAContext) {
 
   const runtimeModel = deserialize<ComRuntimeModel>(json.rt)
 
-  // const reGeoId = (rtModel: ComRuntimeModel) => {//set new id
-  //   rtModel.id = uuid()
-  //
-  //   if (rtModel.geo && rtModel.geo.slots) {
-  //     rtModel.geo.slots.forEach(slot => {
-  //       if (slot.comAry) {
-  //         slot.comAry.forEach(com => {
-  //           reGeoId(com.runtime)
-  //         })
-  //       }
-  //     })
-  //   }
-  // }
-  //
-  // reGeoId(runtimeModel)
-  //
-  //
-  // const reToplId = (rtModel:ComRuntimeModel)=>{
-  //   if(rtModel.topl&&rtModel.topl.frames){
-  //     rtModel.topl.frames.forEach(frame=>{
-  //       if(frame.diagramAry){
-  //         frame.diagramAry.forEach(diagram=>{
-  //           console.log(diagram)
-  //
-  //           diagram.id = uuid()
-  //         })
-  //       }
-  //     })
-  //   }
-  // }
-  //
-  // reToplId(runtimeModel)
+  const reGeoId = (rtModel: ComRuntimeModel) => {//set new id
+    rtModel.id = uuid()
+
+    if (rtModel.geo && rtModel.geo.slots) {
+      rtModel.geo.slots.forEach(slot => {
+        if (slot.comAry) {
+          slot.comAry.forEach(com => {
+            reGeoId(com.runtime)
+          })
+        }
+      })
+    }
+  }
+
+  reGeoId(runtimeModel)
+
+
+  const reToplId = (rtModel:ComRuntimeModel)=>{
+    if(rtModel.topl&&rtModel.topl.frames){
+      rtModel.topl.frames.forEach(frame=>{
+        if(frame.diagramAry){
+          frame.diagramAry.forEach(diagram=>{
+            diagram.id = uuid()
+          })
+        }
+      })
+    }
+  }
+
+  reToplId(runtimeModel)
 
   json.rt = runtimeModel//replace it
 
@@ -713,7 +711,7 @@ export function upgradeAllForDef(comDef: T_XGraphComDef, spaContext: SPAContext)
 }
 
 function upgradeCom(geoComModel: GeoComModel, toplComModel: ToplComModel, comDef: T_XGraphComDef, spaContext: SPAContext) {
-  const {model: dblModel, emitItem, emitMessage, emitLogs, desnContext: context, emitSnap} = spaContext
+  const {model: dblModel, emitItem, emitIOCAbout, emitMessage, emitLogs, desnContext: context, emitSnap} = spaContext
   const curModule = dblModel.getCurModule()
 
   const comRuntimeModel = geoComModel ? geoComModel.runtime : toplComModel.runtime
@@ -737,12 +735,12 @@ function upgradeCom(geoComModel: GeoComModel, toplComModel: ToplComModel, comDef
     params.data = comRuntimeModel.model.data
 
     if (curModule.frame && toplComModel) {
-      params.input = toplComModel.getInputEditor(emitItem)
-      params.output = toplComModel.getOutputEditor(emitItem)
+      params.input = toplComModel.getInputEditor(emitItem, void 0, true)
+      params.output = toplComModel.getOutputEditor(emitItem, void 0, true)
     }
 
     if (geoComModel) {
-      params.slot = geoComModel.getSlotEditor({emitItem, context, emitSnap, emitMessage})
+      params.slot = geoComModel.getSlotEditor({emitItem, context, emitSnap, emitIOCAbout, emitMessage})
       params.style = geoComModel.style
     }
 
@@ -757,7 +755,8 @@ function upgradeCom(geoComModel: GeoComModel, toplComModel: ToplComModel, comDef
         upgradeContinue = true
       }
     } catch (ex) {
-      emitMessage.error(`更新失败.\n${ex.message}`)
+      emitLogs.error(`更新失败.\n${ex.message}`)
+      emitMessage.error(`更新失败.`)
       return
     }
   } else {

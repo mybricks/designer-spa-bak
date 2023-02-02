@@ -162,6 +162,12 @@ export type T_DesignerConfig = {
     }
   }
 
+  com:{
+    env:{
+      renderCom
+    }
+  }
+
   debug: {
     envTypes: { id: string, title: string }[]
   }

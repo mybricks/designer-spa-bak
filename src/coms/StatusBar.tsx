@@ -18,7 +18,7 @@ export default function StatusBar() {
           jsx.push(
             <div key={'geo'}>
               <label>UI组件</label><i>{info.coms}</i>
-              <label>Slot</label><i>{info.slots}</i>
+              <label>插槽</label><i>{info.slots}</i>
             </div>
           )
         }

@@ -1,6 +1,6 @@
 {
-  "name": "@mybricks/designer",
-  "version": "1.0.6",
+  "name": "@mybricks/designer-spa",
+  "version": "1.1.20",
   "description": "Designer for no-code, compatible with low-code",
   "main": "index.min.js",
   "scripts": {

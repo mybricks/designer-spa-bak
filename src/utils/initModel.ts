@@ -5,12 +5,13 @@ import {DesignerContext, T_XGraphComDef} from "@sdk";
 import {keepWatch, load as loadView, useObservable} from "@mybricks/rxui";
 import {uuid} from "@utils";
 import DesignerModel from "../DesignerModel";
-import {GeoViewModel, getRef as geoViewRef, SlotModel} from "@mybricks/desn-geo-view";
+import {GeoComModel, GeoViewModel, getRef as geoViewRef, SlotModel} from "@mybricks/desn-geo-view";
 import {FrameModel, ToplViewModel} from "@mybricks/desn-topl-view";
 import {PERSIST_NAME} from "../constants";
 import {forEachCom} from "./forEachCom";
 import {toJSON} from "./toJSON";
 import {loadComLibs} from "./loaders";
+import {doFrame} from "./compatible-22.12.8";
 
 const MAIN_MODULE_ID = '_main_'
 
@@ -38,6 +39,8 @@ function loadComLibsAndPages(spaContext: SPAContext) {
     }
 
     const nlib = await loadComLibs(libAry)
+
+    //nlib.splice(0,-1,mybricksCoreComLib)
 
     nlib.push(mybricksCoreComLib)
 
@@ -200,7 +203,7 @@ function loadComLibsAndPages(spaContext: SPAContext) {
           return geoViewRef()
         }
       },
-      getPluginData(pluginName){
+      getPluginData(pluginName) {
         return spaContext.desnContext.getPluginData(pluginName)
       },
       getAllComDef() {
@@ -241,7 +244,7 @@ function initStageModel(spaContext: SPAContext) {
       const loadBlank = () => {
         model.designerVersion = DesignerContext.DESIGNER_VERSION
 
-        const mainModule = {
+        const factModule = {
           instId: MAIN_MODULE_ID,
           title: '主模块',
           slot: void 0,
@@ -252,22 +255,22 @@ function initStageModel(spaContext: SPAContext) {
 
         const geoViewCfg = desnContext.configs.geoView
         if (geoViewCfg) {
-          slotTitle = geoViewCfg.modules?.main?.title || '主页面'
+          slotTitle = geoViewCfg.modules?.main?.title || '画布'
 
-          mainModule.slot = new GeoViewModel()
-          mainModule.slot.addModule({id: uuid(), title: slotTitle})
+          factModule.slot = new GeoViewModel()
+          factModule.slot.addModule({id: uuid(), title: slotTitle})
 
           //mainModule.slot.state.enable()
         }
 
         const toplViewCfg = desnContext.configs.toplView
         if (toplViewCfg) {
-          mainModule.frame = new ToplViewModel()
+          factModule.frame = new ToplViewModel()
 
-          const mainFrame = mainModule.frame.addFrame({id: uuid(), title: slotTitle || '主程序'})
+          const mainFrame = factModule.frame.addFrame({id: uuid(), title: slotTitle || '主程序'})
 
           const mainCardsCfg = toplViewCfg.cards?.main
-          if (mainCardsCfg) {
+          if (mainCardsCfg && !desnContext.isDesnModeOfBluePrint()) {//Not blueprint
             mainFrame.addIODiagram({title: mainCardsCfg.title})
 
             if (Array.isArray(mainCardsCfg.inputs)) {
@@ -293,27 +296,22 @@ function initStageModel(spaContext: SPAContext) {
           }
         }
 
-        // if (topl) {
-        //   if (Array.isArray(topl.inputs)) {
-        //     topl.inputs.forEach(input => {
-        //       mainModule.frame.addInputPin(input.id, input.title, void 0)
-        //     })
-        //   }
-        //
-        //   if (Array.isArray(topl.outputs)) {
-        //     topl.outputs.forEach(output => {
-        //       mainModule.frame.addOutputPin(output.id, output.title, void 0)
-        //     })
-        //   }
-        // }
+        if (spaContext.blueprint) {
+          loadView(spaContext.blueprint.content as any)//Load blueprint first
 
-        // if (!mainModule.slot) {
-        //   mainModule.frame.state.enable()
-        // } else {
-        //   mainModule.frame.state.disable()
-        // }
+          model.factModule = factModule
 
-        model.mainModule = mainModule
+          const mainModule = model.mainModule
+
+          const diagramAry = factModule.frame.frames[0].diagramAry
+          if (diagramAry) {
+            diagramAry.forEach(diagram => {
+              mainModule.frame.frames[0].diagramAry.push(diagram)
+            })
+          }
+        } else {
+          model.mainModule = factModule
+        }
       }
 
       if (spaContext.curPage?.content) {
@@ -327,43 +325,43 @@ function initStageModel(spaContext: SPAContext) {
 
         const mainModule = model.mainModule
 
-        if (mainModule) {
+        if (mainModule) {///兼容
           const geoViewCfg = desnContext.configs.geoView
           const toplViewCfg = desnContext.configs.toplView
 
           if (geoViewCfg) {
-            //const slot = mainModule.slot
-            // if (slot && slot.slots.length <= 0) {//兼容
-            //   const mainSlot = slot.addModule({id: uuid(), title: '主页面'}) as SlotModel
-            //   const oStyle = slot.style
-            //   if (oStyle) {
-            //     for (let p in oStyle) {
-            //       mainSlot.style[p] = oStyle[p]
-            //     }
-            //   }
-            //
-            //   mainSlot.comAry = slot.comAry
-            //
-            //   const clearToplView = com => {
-            //     if (!toplViewCfg) {
-            //       com.runtime.topl = void 0
-            //
-            //       if (com.slots) {
-            //         com.slots.forEach(slot => {
-            //           slot.comAry.forEach(ncom => {
-            //             clearToplView(ncom)
-            //           })
-            //         })
-            //       }
-            //     }
-            //   }
-            //
-            //   mainSlot.comAry.forEach(com => {
-            //     com.parent = mainSlot
-            //     clearToplView(com)
-            //   })
-            //   slot.comAry = void 0
-            // }
+            const slot = mainModule.slot
+            if (slot && slot.slots.length <= 0) {//兼容
+              const mainSlot = slot.addModule({id: uuid(), title: '画布'}) as SlotModel
+              const oStyle = slot.style
+              if (oStyle) {
+                for (let p in oStyle) {
+                  mainSlot.style[p] = oStyle[p]
+                }
+              }
+
+              mainSlot.comAry = slot.comAry
+
+              const clearToplView = com => {
+                if (!toplViewCfg) {
+                  com.runtime.topl = void 0
+
+                  if (com.slots) {
+                    com.slots.forEach(slot => {
+                      slot.comAry.forEach(ncom => {
+                        clearToplView(ncom)
+                      })
+                    })
+                  }
+                }
+              }
+
+              mainSlot.comAry.forEach(com => {
+                com.parent = mainSlot
+                clearToplView(com)
+              })
+              slot.comAry = void 0
+            }
           } else {
             if (mainModule.slot) {//remove it
               mainModule.slot = void 0
@@ -372,6 +370,8 @@ function initStageModel(spaContext: SPAContext) {
           }
 
           if (toplViewCfg) {
+            //debugger
+
             const frame = mainModule.frame
             let mainFrame
             if (!frame || !frame.frames) {
@@ -381,67 +381,70 @@ function initStageModel(spaContext: SPAContext) {
             }
 
             if (frame.frames.length <= 0) {//兼容
-              // mainFrame = frame.addFrame({id: uuid(), title: '主页面'})
-              //
-              // mainFrame.frameAry = frame.frameAry
-              //
-              // if (mainFrame.frameAry) {
-              //   mainFrame.frameAry.forEach(frame => {
-              //     frame.parent = mainFrame
-              //   })
-              // }
-              //
-              // mainFrame.diagramAry = frame.diagramAry
-              //
-              // mainFrame.diagramAry.forEach(diagram => {
-              //   diagram.parent = mainFrame
-              // })
-              //
-              // mainFrame.inputPins = frame.inputPins
-              // mainFrame.inputPins.forEach(pin => {
-              //   pin.parent = mainFrame
-              // })
-              //
-              // mainFrame.outputPins = frame.outputPins
-              // mainFrame.outputPins.forEach(pin => {
-              //   pin.parent = mainFrame
-              // })
-              //
-              // mainFrame.comAry = frame.comAry
-              // mainFrame.comAry.forEach(com => {
-              //   com.parent = mainFrame
-              // })
-              //
-              // mainFrame.conAry = frame.conAry
-              //
-              // frame.frameAry = void 0
-              // frame.diagramAry = void 0
-              // frame.inputPins = void 0
-              // frame.outputPins = void 0
-              // frame.comAry = void 0
-              frame.conAry = void 0
+              mainFrame = frame.addFrame({id: uuid(), title: '画布'})
+
+              mainFrame.frameAry = frame.frameAry || []
+
+              if (mainFrame.frameAry) {
+                mainFrame.frameAry.forEach(frame => {
+                  frame.parent = mainFrame
+                })
+              }
+
+              mainFrame.diagramAry = frame.diagramAry
+
+              mainFrame.diagramAry.forEach(diagram => {
+                diagram.parent = mainFrame
+              })
+
+              mainFrame.inputPins = frame.inputPins
+              mainFrame.inputPins.forEach(pin => {
+                pin.parent = mainFrame
+              })
+
+              mainFrame.outputPins = frame.outputPins
+              mainFrame.outputPins.forEach(pin => {
+                pin.parent = mainFrame
+              })
+
+              mainFrame.comAry = frame.comAry
+              mainFrame.comAry.forEach(com => {
+                com.parent = mainFrame
+              })
+
+              //mainFrame.conAry = frame.conAry
+
+              frame.frameAry = void 0
+              frame.diagramAry = void 0
+              frame.inputPins = void 0
+              frame.outputPins = void 0
+              frame.comAry = void 0
+              //frame.conAry = void 0
             } else {
               mainFrame = frame.frames[0]
             }
 
-            const mainCardsCfg = toplViewCfg.cards?.main
-            if (mainCardsCfg) {//兼容性校验
-              if (mainCardsCfg.title) {
-                mainFrame.diagramAry[0].title = mainCardsCfg.title
-              }
-              // if (Array.isArray(toplCfg.inputs)) {
-              //   toplCfg.inputs.forEach(input => {
-              //     if (!mainModule.frame.inputPins.find(pin => pin.hostId === input.id)) {
-              //       mainModule.frame.addInputPin({
-              //         id: input.id,
-              //         hostId: input.id,
-              //         title: input.title,
-              //         schema: input.schema
-              //       })
-              //     }
-              //   })
-              // }
-            }
+            // const mainCardsCfg = toplViewCfg.cards?.main
+            // if (mainCardsCfg) {//兼容性校验
+            //   // if (mainCardsCfg.title) {
+            //   //   mainFrame.diagramAry[0].title = mainCardsCfg.title
+            //   // }
+            //   // if (Array.isArray(toplCfg.inputs)) {
+            //   //   toplCfg.inputs.forEach(input => {
+            //   //     if (!mainModule.frame.inputPins.find(pin => pin.hostId === input.id)) {
+            //   //       mainModule.frame.addInputPin({
+            //   //         id: input.id,
+            //   //         hostId: input.id,
+            //   //         title: input.title,
+            //   //         schema: input.schema
+            //   //       })
+            //   //     }
+            //   //   })
+            //   // }
+            // }
+
+
+            //doFrame(mainFrame)
           } else {
             if (mainModule.frame) {//remove it
               mainModule.frame = void 0
@@ -450,22 +453,61 @@ function initStageModel(spaContext: SPAContext) {
           }
 
           if (spaContext.blueprint) {
-            const factView = loadView(spaContext.curPage.content as any, true)//not merge
+            let factView
+            try {
+              factView = loadView(spaContext.curPage.content as any, true)//not merge
+            } catch (ex) {
+              console.error(ex)
+              debugger
+            }
+
+            const mainGeoViewModel = mainModule.slot
+            const mainSlot = mainGeoViewModel.slots[0]
+
+            const mainToplViewModel = mainModule.frame as ToplViewModel
+            const mainFrame = mainToplViewModel.frames[0]
 
             const factModule = factView[PERSIST_NAME].mainModule
 
-            const mainSlot = factModule.slot.slots[0] as SlotModel
-            if (mainSlot.comAry) {
-              mainSlot.comAry.forEach(com => {
-                mainModule.slot.slots[0].addComponent(com)///TODO
+            const factGeoViewModel = factModule.slot
+            const factSlot = factGeoViewModel.slots[0] as SlotModel
+            if (factSlot.comAry) {
+              factSlot.comAry.forEach(com => {
+                const cp = com.parent
+                if (cp._type === 'blueprint') {
+                  const bpCom = mainSlot.searchCom(cp.comId) as GeoComModel
+                  if (bpCom) {
+                    bpCom.getSlot(cp.slotId).addComponent(com)
+                  } else {
+                    mainSlot.addComponent(com)
+                  }
+                } else {
+                  mainSlot.addComponent(com)
+                }
               })
             }
 
-            const mainFrame = factModule.frame.frames[0] as FrameModel
-            if (mainFrame.comAry) {
-              mainFrame.comAry.forEach(com => {
-                mainModule.frame.frames[0].addComponent(com)///TODO
+            const factToplViewModel = factModule.frame as ToplViewModel
+            const factFrame = factToplViewModel.frames[0] as FrameModel
+            if (factFrame.comAry) {
+              factFrame.comAry.forEach(com => {
+                if (com) {
+                  mainFrame.addComponent(com)///TODO
+                }
               })
+            }
+
+            if (factFrame.diagramAry) {
+              factFrame.diagramAry.forEach(diagram => {
+                if (diagram) {
+                  diagram.parent = mainFrame//change it's parent
+                  mainFrame.diagramAry.push(diagram)
+                }
+              })
+            }
+
+            if (factToplViewModel.curDiagram) {
+              mainToplViewModel.curDiagram = factToplViewModel.curDiagram
             }
 
             model.factModule = factModule

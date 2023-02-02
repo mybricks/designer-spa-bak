@@ -6,7 +6,7 @@ import {dump as dumpPage} from "@mybricks/rxui";
 import DesignerModel from "./DesignerModel";
 import {T_Plugin} from "@mybricks/sdk";
 import ConnectorModel from "./ConnectorModel";
-import {FrameModel} from "@mybricks/desn-topl-view";
+import {DiagramModel, FrameModel, ToplComModel} from "@mybricks/desn-topl-view";
 import {GeoComModel, SlotModel} from "@mybricks/desn-geo-view";
 
 export default class SPAContext {
@@ -73,6 +73,8 @@ export default class SPAContext {
   emitSnap: NS_Emits.Snap
 
   emitItem: NS_Emits.Component
+
+  emitIOCAbout:NS_Emits.IOCAbout
 
   emitMessage: NS_Emits.Message
 
@@ -228,6 +230,10 @@ export default class SPAContext {
   }
 
   updateConnector(opts: { id, title, paramAry, inputSchema, outputSchema, script }) {
+    if (!opts.id) {
+      throw new Error('expect id')
+    }
+
     const conModel = this.model.searchConnector(opts.id)
     if (conModel) {
       for (const key in opts) {
@@ -339,13 +345,91 @@ export default class SPAContext {
     const factModule = this.model.factModule
 
     if (factModule) {//with blueprint
-      const dumped = dumpPage(this.model.mainModule,
+      const mainModule = this.model.mainModule
+
+      const BP_KEY = `__blueprint-slot__`
+
+      function scanCom(geoCom: GeoComModel, replacedComAry) {
+        if (!geoCom.runtime) {
+          debugger
+        }
+        if (geoCom.runtime.isBluePrint) {
+          if (geoCom.slots) {
+            geoCom.slots.forEach(slot => {
+              scanSlot(slot, replacedComAry)
+            })
+          }
+        }
+      }
+
+      function scanSlot(slot: SlotModel, replacedComAry) {
+        const comAry = slot.comAry
+        if (comAry) {
+          comAry.forEach(com => {
+            if (!com.runtime.isBluePrint) {
+              replacedComAry.push(com)
+
+              if (!com[BP_KEY]){
+                Object.defineProperty(com, BP_KEY, {
+                  get() {
+                    return {
+                      comId: slot.parent.id,
+                      slotId: slot.id
+                    }
+                  }
+                })
+              }
+            } else {
+              scanCom(com, replacedComAry)
+            }
+          })
+        }
+      }
+
+      const dumped = dumpPage({mainModule},
         {
           uncompressed: true,
           map(target, prop, val) {
-            if(target instanceof SlotModel){
-              debugger /////TODO 增加过滤条件
+            if (!val) {
+              return val
             }
+
+            if (prop === 'diagramAry' && Array.isArray(val)) {//diagramAry in framemodel
+              const newVal = []
+              val.forEach((diagram, idx) => {
+                if (diagram instanceof DiagramModel && !diagram.isBluePrint) {//Ignore slot that it's parent is blueprint
+                  newVal.push(diagram)
+                }
+              })
+
+              return newVal
+            }
+
+            if (prop === 'comAry' && Array.isArray(val)) {
+              const newVal = []
+              val.forEach((com, idx) => {
+                if (com instanceof GeoComModel && com.runtime.isBluePrint) {//Ignore slot that it's parent is blueprint
+                  scanCom(com, newVal)
+                } else {
+                  newVal.push(com)
+                }
+              })
+
+              if (newVal.length > 0) {
+                return newVal.filter(val => val)//[undeinfed,xx]
+              } else {
+                return val
+              }
+            }
+
+            if (target[BP_KEY] && prop === 'parent') {
+              //delete target[BP_KEY]
+              return {
+                _type: 'blueprint',
+                ...target[BP_KEY]
+              }
+            }
+
 
             if (target instanceof ComRuntimeModel && target.isBluePrint) {
               return
@@ -355,6 +439,10 @@ export default class SPAContext {
               return
             }
 
+
+            // if (target instanceof ToplComModel && target.parentCom?.runtime.isBluePrint) {//Ignore toplcom
+            //   return
+            // }
 
 
             return val
@@ -386,9 +474,9 @@ export default class SPAContext {
       //
       // const dumped = dumpPage({mainModule:factModule}, uncompressed)
 
-      console.log(JSON.stringify(dumped))
+      //console.log(JSON.stringify(dumped))
 
-      throw new Error('test')
+      //throw new Error('test')
 
       return {
         content: {

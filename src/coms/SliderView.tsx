@@ -17,6 +17,7 @@ import {T_Plugin} from "@mybricks/sdk";
 import DesignerModel from "../DesignerModel";
 import {createPortal} from "react-dom";
 import {toJSON} from "../utils/toJSON";
+import {SlotModel} from "@mybricks/desn-geo-view";
 
 class Ctx {
   spaContext: SPAContext
@@ -154,6 +155,48 @@ export default function SliderView({style}) {
                 toJSON() {
                   return toJSON(spaContext)
                 },
+                getGeoJSON() {
+                  const viewModel = ctx.model.mainModule.slot
+                  const mainSlot = viewModel.slots[0]
+
+                  function getSlotJSON(slot: SlotModel) {
+                    return {
+                      id: slot.id,
+                      style: slot.style.toJSON(),
+                      get comAry() {
+                        return slot.comAry.map(com => {
+                          const rt = com.runtime
+                          const def = rt.def
+
+                          return {
+                            id: com.id,
+                            def: {
+                              namespace: def.namespace,
+                              version: def.version,
+                            },
+                            get model() {
+                              return {
+                                style: rt.model.style.toJSON(),
+                                data: rt.model.data
+                              }
+                            },
+                            get slots() {
+                              if (com.slots) {
+                                const ary = []
+                                com.slots.forEach(slot => {
+                                  ary.push(getSlotJSON(slot))
+                                })
+                                return ary
+                              }
+                            }
+                          }
+                        })
+                      }
+                    }
+                  }
+
+                  return getSlotJSON(mainSlot)
+                }
               }
             }
 

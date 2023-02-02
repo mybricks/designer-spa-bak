@@ -1,6 +1,3 @@
-import {Arrays} from "@utils";
-import {FrameModel, PinModel, ToplComModel} from "@mybricks/desn-topl-view";
-import {SlotModel} from "@mybricks/desn-geo-view";
 import SPAContext from "../SPAContext";
 
 import {getJSONFromModule} from '@mybricks/file-parser'
@@ -12,16 +9,12 @@ export function toJSON(mpaContext: SPAContext) {
   const mainFrame = model.mainModule.frame
 
   let slot, frame
-  if (mainSlot?.slots) {
-    mainSlot.slots.forEach(s => {
-      slot = s
-    })
+  if (mainSlot?.slots?.length > 0) {
+    slot = mainSlot.slots[0]
   }
 
-  if (mainFrame?.frames) {
-    mainFrame.frames.forEach(f => {
-      frame = f
-    })
+  if (mainFrame?.frames?.length > 0) {
+    frame = mainFrame.frames[0]
   }
 
   const json = getJSONFromModule({slot, frame})

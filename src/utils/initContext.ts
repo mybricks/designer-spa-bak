@@ -1,7 +1,7 @@
 import SPAContext from "../SPAContext";
 import {DesignerContext, NS_Emits} from "@sdk";
 
-import {implement, takeSnap, useObservable} from "@mybricks/rxui";
+import {implement, stopWatch, takeSnap, useObservable} from "@mybricks/rxui";
 import {T_Page} from "../types";
 
 export default function initContext(desnContext: DesignerContext, {
@@ -72,22 +72,29 @@ export default function initContext(desnContext: DesignerContext, {
   }), {from: 'children'})
 
   const emitItem = useObservable(NS_Emits.Component, {expectTo: 'children'})
+  const emitIOCAbout = useObservable(NS_Emits.IOCAbout, {expectTo: 'children'})
   const emitLogs = implement(NS_Emits.Logs, next => next({
     info(msg) {
       requestAnimationFrame(v => {
-        spaContext.eventLogs.push({time: new Date(), type: 'info', msg})
+        stopWatch(() => {
+          spaContext.eventLogs.push({time: new Date(), type: 'info', msg})
+        })
       })
       // console.warn(`Not implement for NS_Emits.Logs.error`)
       // console.log(msg)
     },
     warn(msg) {
       requestAnimationFrame(v => {
-        spaContext.eventLogs.push({time: new Date(), type: 'warn', msg})
+        stopWatch(() => {
+          spaContext.eventLogs.push({time: new Date(), type: 'warn', msg})
+        })
       })
     },
     error(msg) {
       requestAnimationFrame(v => {
-        spaContext.eventLogs.push({time: new Date(), type: 'error', msg})
+        stopWatch(() => {
+          spaContext.eventLogs.push({time: new Date(), type: 'error', msg})
+        })
       })
     }
   }), {from: 'children', expectTo: 'children'})
@@ -161,8 +168,6 @@ export default function initContext(desnContext: DesignerContext, {
     if (spaContext.config.pageContentLoader) {
       let loadedContent: { title, content } = await spaContext.config.pageContentLoader()
 
-      //projectData.pageAry TODO Compatibility
-
       let projectData, tptData
       if (Array.isArray(loadedContent)) {
         projectData = loadedContent[0]
@@ -207,6 +212,7 @@ export default function initContext(desnContext: DesignerContext, {
     emitLogs,
     emitSnap,
     emitItem,
+    emitIOCAbout,
     emitMessage,
     // pageLoader: config.pageLoader,
   }), {to: "children"})

@@ -107,6 +107,9 @@ export default function Tooltips() {
           } else if (descObj.position === 'left') {
             e.style.top = (po.y + po.h / 2 - e.offsetHeight / 2) + 'px'
             e.style.left = (po.x - e.offsetWidth - 8) + 'px'
+          } else if (descObj.position === 'bottom') {
+            e.style.top = (po.y + e.offsetHeight - 16) + 'px'
+            e.style.left = (po.x - e.offsetWidth / 2 + po.w / 2) + 'px'
           } else {
             e.style.top = (po.y - e.offsetHeight - 3) + 'px'
             e.style.left = (po.x - e.offsetWidth / 2 + po.w / 2) + 'px'
@@ -115,6 +118,7 @@ export default function Tooltips() {
       }} className={`${css.tooltip} 
       ${descObj.position === 'left' ? css.left : ''}
       ${descObj.position === 'right' ? css.right : ''}
+      ${descObj.position === 'bottom' ? css.bottom : ''}
       `}>
         <div className={css.arrow}>
           <div className={css.content}/>
